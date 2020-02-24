@@ -1,0 +1,79 @@
+﻿@page "/escape"
+<h3>Escape</h3>
+
+
+<h1>escape</h1>
+
+<table class="board">
+    @* @for (int y = 0; y < board.Count; y++)
+    {
+        <tr>
+            @for (int x = 0; x < board[y].Count; x++)
+            {
+                <td @onclick="Escape" class="@(board[y][x] ? "active" : "")">@y . @x</td>
+            }
+        </tr>
+    } *@
+
+    @foreach (var list in board)
+    {
+        <tr>
+            @foreach (var cell in list)
+            {
+                <td @onclick="(() => escapeCell(cell))" class="@(cell.val ? "active" : "")">@cell.x @cell.y</td>
+            }
+        </tr>
+    }
+</table>
+
+@code {
+    private IList<IList<(int x, int y, bool val)>> board;
+
+    protected override void OnInitialized()
+    {
+        board = new List<IList<(int x, int y, bool val)>>();
+        board.Add(new List<(int x, int y, bool val)>() {
+            (0,0,true),
+            (1,0,true),
+        });
+        board.Add(new List<(int x, int y, bool val)>() {
+            (0,1,true),
+            (1,1,false),
+        });
+    }
+
+    private void escapeCell((int x, int y, bool val) t)
+    {
+        if (
+            (board[t.y].Count > t.x + 1 && board[t.y][t.x + 1].val)
+            || (board.Count > t.y + 1 && board[t.y + 1][t.x].val)
+            || t.val == false
+        ) {
+            return;
+        }
+
+        //set current cell to false
+        board[t.y][t.x] = (t.x, t.y, false);
+
+        //add row if needed
+        if (board.Count <= t.y + 1) {
+            board.Add(new List<(int x, int y, bool val)>());
+            for (int i = 0; i < board[0].Count; i++)
+            {
+                board[t.y + 1].Add((i, t.y + 1, false));
+            }
+        }
+
+        //add coluimn if needed
+        if (board[0].Count <= t.x + 1) {
+            for (int i = 0; i < board.Count; i++)
+            {
+                board[i].Add((t.x + 1, i, false));
+            }
+        }
+
+        //set true
+        board[t.y][t.x + 1] = (t.x + 1, t.y, true);
+        board[t.y + 1][t.x] = (t.x, t.y + 1, true);
+    }
+}
